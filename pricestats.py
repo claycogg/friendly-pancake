@@ -1,8 +1,4 @@
-import nose
-import unittest
-import sys
 import datetime as dt
-import math
 
 # for quick dirty testing
 global ghi
@@ -140,6 +136,7 @@ class PriceAnalyzer:
 
         print("MEDIAN : %.2f" % median_price)
 
+
 class DateReader:
 
     def __init__(self):
@@ -149,7 +146,6 @@ class DateReader:
         # check the path to make sure its not something weird
         date_file = open(path, 'r')
         temp_dict = {}
-
         for line in date_file:
             tokens = line.split()
             tokens[0] = self.to_datetime(tokens[0])
@@ -197,19 +193,14 @@ class CLI:
 
         return self.handle_response(response)
 
+def dev_tests():
 
-# init our classes
-aCli = CLI()
-aDateReader = DateReader()
+    aDateReader.read_file(aCli.filePath)
 
-# do a little work
-aCli.request_path()
-aDateReader.read_file(aCli.filePath)
+    aPriceAnalyzer = PriceAnalyzer(aDateReader.dateDict)
 
-aPriceAnalyzer = PriceAnalyzer(aDateReader.dateDict)
-
-aPriceAnalyzer.get_price(dt.datetime(2016, 1, 2))
-aPriceAnalyzer.get_price(ghi)
-aPriceAnalyzer.get_price(dt.datetime(2017, 4, 27))
-aPriceAnalyzer.get_price(dt.datetime(2017, 12, 12))
-aPriceAnalyzer.price_range(dt.datetime(2017, 1, 1), dt.datetime(2017, 5, 20))
+    aPriceAnalyzer.get_price(dt.datetime(2016, 1, 2))
+    aPriceAnalyzer.get_price(ghi)
+    aPriceAnalyzer.get_price(dt.datetime(2017, 4, 27))
+    aPriceAnalyzer.get_price(dt.datetime(2017, 12, 12))
+    aPriceAnalyzer.price_range(dt.datetime(2017, 1, 1), dt.datetime(2017, 5, 20))
