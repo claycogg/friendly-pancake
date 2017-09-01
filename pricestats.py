@@ -1,12 +1,15 @@
 import nose
 import unittest
 import sys
+import datetime as dt
 
+
+#it has to take a datetime.datetime object
+global ghi
 
 class DateReader:
 
     def __init__(self):
-        self.filePath = None
         self.dateDict = None
 
     def read_file(self, path):
@@ -16,11 +19,19 @@ class DateReader:
 
         for line in date_file:
             tokens = line.split()
+            tokens[0] = self.to_datetime(tokens[0])
             temp_dict[tokens[0]] = (tokens[1], tokens[2])
         self.dateDict = temp_dict
         return temp_dict
 
-
+    @classmethod
+    def to_datetime(self, date):
+        temp_date = date
+        #this does not use ISO_8601 style as is (not for formating)
+        temp_date = dt.datetime.strptime(temp_date, "%Y-%m-%dT%H:%M:%SZ")
+        global ghi
+        ghi = temp_date
+        return temp_date
 
 class CLI:
 
@@ -40,7 +51,8 @@ class CLI:
 
         else:
             print("Pleas enter Y or N\n")
-            self.request_path()
+            response = input('Is this the correct file? Y/N\n')
+            self.handle_response(response)
 
     def request_path(self):
         file_path = input("Please provide a file path ...\n")
@@ -60,4 +72,5 @@ aDateReader = DateReader()
 #do a little work
 aCli.request_path()
 aDateReader.read_file(aCli.filePath)
+
 
