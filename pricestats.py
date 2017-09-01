@@ -2,13 +2,28 @@ import nose
 import unittest
 import sys
 
-class DateReader(object):
-    def __init__(self, path):
-        self.filePath = path
-        print("~Welcome to my DateReader~")
+
+class DateReader:
+
+    def __init__(self):
+        self.filePath = None
+        self.dateDict = None
+
+    def read_file(self, path):
+        #check the path to make sure its not something weird
+        date_file = open(path, 'r')
+        temp_dict = {}
+
+        for line in date_file:
+            tokens = line.split()
+            temp_dict[tokens[0]] = (tokens[1], tokens[2])
+        self.dateDict = temp_dict
+        return temp_dict
 
 
-class CLI():
+
+class CLI:
+
     def __init__(self):
         self.filePath = None
         self.again = None
@@ -38,6 +53,11 @@ class CLI():
         return self.handle_response(response)
 
 
+#init our classes
 aCli = CLI()
+aDateReader = DateReader()
+
+#do a little work
 aCli.request_path()
-aDateReader = DateReader(aCli.filePath)
+aDateReader.read_file(aCli.filePath)
+
