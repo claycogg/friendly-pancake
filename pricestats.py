@@ -2,6 +2,7 @@ import nose
 import unittest
 import sys
 import datetime as dt
+import math
 
 # for quick dirty testing
 global ghi
@@ -9,11 +10,14 @@ global ghi
 
 class PriceAnalyzer:
 
+    @classmethod
     def __init__(self, date_prices):
         self.datePrices = date_prices
+        self.firstDate = None
+        self.secondDate = None
 
     def get_price(self, date):
-        search_dict = self.datePrices
+        search_dict = dict(self.datePrices)
         indexer = list(search_dict.keys())
 
         if date in indexer:
@@ -48,6 +52,93 @@ class PriceAnalyzer:
                         print("Price from the adjacent items: %.2f" % avg_price)
                         return avg_price
 
+    @classmethod
+    def price_range(cls, first_date, second_date):
+        if first_date > second_date:
+            cls.firstDate = second_date
+            cls.secondDate = first_date
+        else:
+            cls.firstDate = first_date
+            cls.secondDate = second_date
+
+        dates = dict(cls.datePrices)
+        for date in list(dates.keys()):
+            if date < cls.firstDate:
+                del dates[date]
+            if date > cls.secondDate:
+                del dates[date]
+
+        max = cls.price_max(dates)
+        min = cls.price_min(dates)
+        avg = cls.price_avg(dates)
+        std_dev = cls.price_std_dev(dates, avg)
+        median = cls.price_median(dates)
+
+    @classmethod
+    def price_max(cls, dates):
+        max_date = None
+        max_price = str(float("-inf"))
+        for date in list(dates.keys()):
+            price_units = dates[date]
+            if max_price < price_units[0]:
+                max_date = date
+                max_price = price_units[0]
+        print("MAX : " + max_price)
+        return max_price
+
+    @classmethod
+    def price_min(cls, dates):
+        min_date = None
+        min_price = str(float("inf"))
+        for date in list(dates.keys()):
+            price_units = dates[date]
+            if price_units[0] < min_price:
+                min_date = date
+                min_price = price_units[0]
+        print("MIN : " + min_price)
+        return min_price
+
+    @classmethod
+    def price_avg(cls, dates):
+        counter = 0
+        total = 0
+        avg_price = 0
+        for date in dates:
+            price_units = dates[date]
+            total += float(price_units[0])
+            counter += 1
+
+        if counter is not 0:
+            avg_price = total/counter
+        print("AVG : %.2f" % avg_price)
+        return avg_price
+
+    @classmethod
+    def price_std_dev(cls, dates, avg):
+
+        counter = 0
+        for date in dates:
+            price_units = dates[date]
+            std_sum = ((float(price_units[0])) - avg)**2
+            counter += 1
+        std_dev = std_sum / counter
+        print("STD_DEV : %.2f" % std_dev)
+
+        return std_dev
+    @classmethod
+    def price_median(cls, dates):
+        median_price = None
+        # It takes the average of prices from around it for an even amount of dates
+        indexer = list(dates.keys())
+        half_length = len(indexer)/2
+        if type(half_length) is not int:
+            half_length = int(half_length)
+            median_price = (float(dates[indexer[half_length]][0]) + float(dates[indexer[half_length + 1]][0]))/2
+        else:
+            median_date = indexer[half_length]
+            median_price = dates[median_date][0]
+
+        print("MEDIAN : %.2f" % median_price)
 
 class DateReader:
 
@@ -66,7 +157,6 @@ class DateReader:
         self.dateDict = temp_dict
         return temp_dict
 
-    @classmethod
     def to_datetime(self, date):
         temp_date = date
         # this does not use ISO_8601 style as is (not for formating)
@@ -74,6 +164,7 @@ class DateReader:
         global ghi
         ghi = temp_date
         return temp_date
+
 
 class CLI:
 
@@ -107,11 +198,11 @@ class CLI:
         return self.handle_response(response)
 
 
-#init our classes
+# init our classes
 aCli = CLI()
 aDateReader = DateReader()
 
-#do a little work
+# do a little work
 aCli.request_path()
 aDateReader.read_file(aCli.filePath)
 
@@ -121,4 +212,4 @@ aPriceAnalyzer.get_price(dt.datetime(2016, 1, 2))
 aPriceAnalyzer.get_price(ghi)
 aPriceAnalyzer.get_price(dt.datetime(2017, 4, 27))
 aPriceAnalyzer.get_price(dt.datetime(2017, 12, 12))
-
+aPriceAnalyzer.price_range(dt.datetime(2017, 1, 1), dt.datetime(2017, 5, 20))
