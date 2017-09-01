@@ -1,8 +1,5 @@
 import datetime as dt
 
-# for quick dirty testing
-global ghi
-
 
 class PriceAnalyzer:
 
@@ -13,83 +10,92 @@ class PriceAnalyzer:
         self.secondDate = None
 
     def get_price(self, date):
-        search_dict = dict(self.datePrices)
-        indexer = list(search_dict.keys())
+        dates = dict(self.datePrices)
+        indexer = list(dates.keys())
 
         if date in indexer:
-            price_units = search_dict[date]
+            price_units = dates[date]
             print("Price: " + price_units[0])
             return price_units[0]
 
         else:
             # quick and dirty solution to finding neighbors is to create an empty key in the dict
-            search_dict[date] = '0'
-            indexer = list(search_dict.keys())
+            dates[date] = '0'
+            indexer = list(dates.keys())
             indexer.sort()
+            print(indexer)
 
             for i in range(0, len(indexer)):
-                curr_date = search_dict[indexer[i]]
+                print(indexer[i])
                 if indexer[i] == date:
                     if i == 0:
-                        next_price = search_dict[indexer[i+1]]
+                        print(dates)
+                        next_price = dates[indexer[i+1]]
                         print("Price from the next item: " + next_price[0])
                         return next_price[0]
 
                     elif i == len(indexer) - 1:
-                        last_price = search_dict[indexer[i-1]]
+                        last_price = dates[indexer[i-1]]
                         print("Price from the last item: " + last_price[0])
                         return last_price[0]
 
                     else:
-                        last_price = search_dict[indexer[i-1]]
-                        next_price = search_dict[indexer[i+1]]
-
-                        avg_price = (float(last_price[0]) + float(next_price[0]) / 2)
+                        last_price = dates[indexer[i-1]]
+                        next_price = dates[indexer[i+1]]
+                        avg_price = (float(last_price[0]) + float(next_price[0])) / 2
                         print("Price from the adjacent items: %.2f" % avg_price)
-                        return avg_price
+                        return "%.2f" % avg_price
 
     @classmethod
-    def price_range(cls, first_date, second_date):
+    def first_second_order(cls, first_date, second_date):
         if first_date > second_date:
             cls.firstDate = second_date
             cls.secondDate = first_date
         else:
             cls.firstDate = first_date
             cls.secondDate = second_date
+        return
 
+    @classmethod
+    def dict_cleaner(cls):
         dates = dict(cls.datePrices)
         for date in list(dates.keys()):
             if date < cls.firstDate:
                 del dates[date]
             if date > cls.secondDate:
                 del dates[date]
+        return dates
 
-        max = cls.price_max(dates)
-        min = cls.price_min(dates)
+    @classmethod
+    def price_range(cls, first_date, second_date):
+        cls.first_second_order(first_date, second_date)
+        dates = cls.dict_cleaner()
+
+        p_max = cls.price_max(dates)
+        p_min = cls.price_min(dates)
         avg = cls.price_avg(dates)
         std_dev = cls.price_std_dev(dates, avg)
         median = cls.price_median(dates)
 
+        print(p_max + p_min + avg + std_dev + median)
+        return p_max, p_min, avg, std_dev, median
+
     @classmethod
     def price_max(cls, dates):
-        max_date = None
         max_price = str(float("-inf"))
         for date in list(dates.keys()):
             price_units = dates[date]
             if max_price < price_units[0]:
-                max_date = date
                 max_price = price_units[0]
         print("MAX : " + max_price)
         return max_price
 
     @classmethod
     def price_min(cls, dates):
-        min_date = None
         min_price = str(float("inf"))
         for date in list(dates.keys()):
             price_units = dates[date]
             if price_units[0] < min_price:
-                min_date = date
                 min_price = price_units[0]
         print("MIN : " + min_price)
         return min_price
@@ -103,38 +109,41 @@ class PriceAnalyzer:
             price_units = dates[date]
             total += float(price_units[0])
             counter += 1
-
         if counter is not 0:
             avg_price = total/counter
         print("AVG : %.2f" % avg_price)
-        return avg_price
+        return "%.2f" % avg_price
 
     @classmethod
     def price_std_dev(cls, dates, avg):
-
         counter = 0
         for date in dates:
             price_units = dates[date]
-            std_sum = ((float(price_units[0])) - avg)**2
+            std_sum = ((float(price_units[0])) - float(avg))**2
             counter += 1
         std_dev = std_sum / counter
         print("STD_DEV : %.2f" % std_dev)
 
-        return std_dev
+        return "%.2f" % std_dev
+
     @classmethod
     def price_median(cls, dates):
         median_price = None
         # It takes the average of prices from around it for an even amount of dates
         indexer = list(dates.keys())
         half_length = len(indexer)/2
-        if type(half_length) is not int:
+        print(half_length)
+        if type(half_length) is not int and half_length >= 2:
             half_length = int(half_length)
             median_price = (float(dates[indexer[half_length]][0]) + float(dates[indexer[half_length + 1]][0]))/2
+        elif half_length == 1:
+            median_price = (float(dates[indexer[0]][0]) + float(dates[indexer[1]][0]))/2
         else:
             median_date = indexer[half_length]
             median_price = dates[median_date][0]
 
         print("MEDIAN : %.2f" % median_price)
+        return "%.2f" % median_price
 
 
 class DateReader:
@@ -157,10 +166,7 @@ class DateReader:
         temp_date = date
         # this does not use ISO_8601 style as is (not for formating)
         temp_date = dt.datetime.strptime(temp_date, "%Y-%m-%dT%H:%M:%SZ")
-        global ghi
-        ghi = temp_date
         return temp_date
-
 
 class CLI:
 
@@ -192,15 +198,3 @@ class CLI:
         response = input('Is this the correct file? Y/N\n')
 
         return self.handle_response(response)
-
-def dev_tests():
-
-    aDateReader.read_file(aCli.filePath)
-
-    aPriceAnalyzer = PriceAnalyzer(aDateReader.dateDict)
-
-    aPriceAnalyzer.get_price(dt.datetime(2016, 1, 2))
-    aPriceAnalyzer.get_price(ghi)
-    aPriceAnalyzer.get_price(dt.datetime(2017, 4, 27))
-    aPriceAnalyzer.get_price(dt.datetime(2017, 12, 12))
-    aPriceAnalyzer.price_range(dt.datetime(2017, 1, 1), dt.datetime(2017, 5, 20))
