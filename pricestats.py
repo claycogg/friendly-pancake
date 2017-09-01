@@ -32,12 +32,12 @@ class PriceAnalyzer:
                 if indexer[i] == date:
                     if i == 0:
                         next_price = search_dict[indexer[i+1]]
-                        print("Price from the date before: " + next_price[0])
+                        print("Price from the next item: " + next_price[0])
                         return next_price[0]
 
                     elif i == len(indexer) - 1:
                         last_price = search_dict[indexer[i-1]]
-                        print("Price from the item before: " + last_price[0])
+                        print("Price from the last item: " + last_price[0])
                         return last_price[0]
 
                     else:
@@ -117,7 +117,8 @@ aDateReader.read_file(aCli.filePath)
 
 aPriceAnalyzer = PriceAnalyzer(aDateReader.dateDict)
 
-aPriceAnalyzer.get_price(dt.datetime(2017, 1, 2))
+aPriceAnalyzer.get_price(dt.datetime(2016, 1, 2))
 aPriceAnalyzer.get_price(ghi)
 aPriceAnalyzer.get_price(dt.datetime(2017, 4, 27))
+aPriceAnalyzer.get_price(dt.datetime(2017, 12, 12))
 
