@@ -3,11 +3,9 @@ import unittest
 import sys
 import datetime as dt
 
-
-#it has to take a datetime.datetime object
-
-#for quick dirty testing
+# for quick dirty testing
 global ghi
+
 
 class PriceAnalyzer:
 
@@ -57,7 +55,7 @@ class DateReader:
         self.dateDict = None
 
     def read_file(self, path):
-        #check the path to make sure its not something weird
+        # check the path to make sure its not something weird
         date_file = open(path, 'r')
         temp_dict = {}
 
@@ -71,7 +69,7 @@ class DateReader:
     @classmethod
     def to_datetime(self, date):
         temp_date = date
-        #this does not use ISO_8601 style as is (not for formating)
+        # this does not use ISO_8601 style as is (not for formating)
         temp_date = dt.datetime.strptime(temp_date, "%Y-%m-%dT%H:%M:%SZ")
         global ghi
         ghi = temp_date
@@ -119,7 +117,7 @@ aDateReader.read_file(aCli.filePath)
 
 aPriceAnalyzer = PriceAnalyzer(aDateReader.dateDict)
 
-aPriceAnalyzer.get_price(dt.datetime.now())
+aPriceAnalyzer.get_price(dt.datetime(2017, 1, 2))
 aPriceAnalyzer.get_price(ghi)
 aPriceAnalyzer.get_price(dt.datetime(2017, 4, 27))
 
