@@ -5,7 +5,51 @@ import datetime as dt
 
 
 #it has to take a datetime.datetime object
+
+#for quick dirty testing
 global ghi
+
+class PriceAnalyzer:
+
+    def __init__(self, date_prices):
+        self.datePrices = date_prices
+
+    def get_price(self, date):
+        search_dict = self.datePrices
+        indexer = list(search_dict.keys())
+
+        if date in indexer:
+            price_units = search_dict[date]
+            print("Price: " + price_units[0])
+            return price_units[0]
+
+        else:
+            # quick and dirty solution to finding neighbors is to create an empty key in the dict
+            search_dict[date] = '0'
+            indexer = list(search_dict.keys())
+            indexer.sort()
+
+            for i in range(0, len(indexer)):
+                curr_date = search_dict[indexer[i]]
+                if indexer[i] == date:
+                    if i == 0:
+                        next_price = search_dict[indexer[i+1]]
+                        print("Price from the date before: " + next_price[0])
+                        return next_price[0]
+
+                    elif i == len(indexer) - 1:
+                        last_price = search_dict[indexer[i-1]]
+                        print("Price from the item before: " + last_price[0])
+                        return last_price[0]
+
+                    else:
+                        last_price = search_dict[indexer[i-1]]
+                        next_price = search_dict[indexer[i+1]]
+
+                        avg_price = (float(last_price[0]) + float(next_price[0]) / 2)
+                        print("Price from the adjacent items: %.2f" % avg_price)
+                        return avg_price
+
 
 class DateReader:
 
@@ -73,4 +117,9 @@ aDateReader = DateReader()
 aCli.request_path()
 aDateReader.read_file(aCli.filePath)
 
+aPriceAnalyzer = PriceAnalyzer(aDateReader.dateDict)
+
+aPriceAnalyzer.get_price(dt.datetime.now())
+aPriceAnalyzer.get_price(ghi)
+aPriceAnalyzer.get_price(dt.datetime(2017, 4, 27))
 
