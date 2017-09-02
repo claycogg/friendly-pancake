@@ -1,5 +1,8 @@
 import datetime as dt
 
+# Note: A lot of the code in here is actually not DRY. It is possible to do 1 loop through the 'dates' and calculate
+# all the desired things in 1/5th the time. I decided to leave it as is for testability.
+
 
 class PriceAnalyzer:
 
@@ -19,17 +22,14 @@ class PriceAnalyzer:
             return price_units[0]
 
         else:
-            # quick and dirty solution to finding neighbors is to create an empty key in the dict
+            # quick and dirty solution to finding neighbors is to create a key with an arbitrary value in the dict
             dates[date] = '0'
             indexer = list(dates.keys())
             indexer.sort()
-            print(indexer)
 
             for i in range(0, len(indexer)):
-                print(indexer[i])
                 if indexer[i] == date:
                     if i == 0:
-                        print(dates)
                         next_price = dates[indexer[i+1]]
                         print("Price from the next item: " + next_price[0])
                         return next_price[0]
@@ -47,17 +47,15 @@ class PriceAnalyzer:
                         return "%.2f" % avg_price
 
     @classmethod
-    def first_second_order(cls, first_date, second_date):
+    def dict_cleaner(cls, first_date, second_date):
+
         if first_date > second_date:
             cls.firstDate = second_date
             cls.secondDate = first_date
         else:
             cls.firstDate = first_date
             cls.secondDate = second_date
-        return
 
-    @classmethod
-    def dict_cleaner(cls):
         dates = dict(cls.datePrices)
         for date in list(dates.keys()):
             if date < cls.firstDate:
@@ -68,7 +66,6 @@ class PriceAnalyzer:
 
     @classmethod
     def price_range(cls, first_date, second_date):
-        cls.first_second_order(first_date, second_date)
         dates = cls.dict_cleaner()
 
         p_max = cls.price_max(dates)
@@ -128,8 +125,7 @@ class PriceAnalyzer:
 
     @classmethod
     def price_median(cls, dates):
-        median_price = None
-        # It takes the average of prices from around it for an even amount of dates
+        # It takes the average of prices from around it for an even amount of dates.
         indexer = list(dates.keys())
         half_length = len(indexer)/2
         print(half_length)
@@ -151,50 +147,19 @@ class DateReader:
     def __init__(self):
         self.dateDict = None
 
-    def read_file(self, path):
-        # check the path to make sure its not something weird
-        date_file = open(path, 'r')
-        temp_dict = {}
+    def read_file(self, date_file):
+        # Check the path to make sure its not something weird? Not presently done.
+        dates = {}
         for line in date_file:
             tokens = line.split()
             tokens[0] = self.to_datetime(tokens[0])
-            temp_dict[tokens[0]] = (tokens[1], tokens[2])
-        self.dateDict = temp_dict
-        return temp_dict
+            dates[tokens[0]] = (tokens[1], tokens[2])
+        self.dateDict = dates
+        date_file.close()
+        return dates
 
     def to_datetime(self, date):
         temp_date = date
-        # this does not use ISO_8601 style as is (not for formating)
+        # this does not use ISO_8601 style as is (not for the format string)
         temp_date = dt.datetime.strptime(temp_date, "%Y-%m-%dT%H:%M:%SZ")
         return temp_date
-
-class CLI:
-
-    def __init__(self):
-        self.filePath = None
-        self.again = None
-        self.response = None
-        print("--Welcome to my PricingStatistics Implementation--\n")
-
-    def handle_response(self, response):
-        response = str(response)
-        if response.upper() == 'Y':
-            return self.filePath
-
-        elif response.upper() == 'N':
-            self.request_path()
-
-        else:
-            print("Pleas enter Y or N\n")
-            response = input('Is this the correct file? Y/N\n')
-            self.handle_response(response)
-
-    def request_path(self):
-        file_path = input("Please provide a file path ...\n")
-        self.filePath = file_path
-
-        print("You have selected: " + file_path + '\n')
-
-        response = input('Is this the correct file? Y/N\n')
-
-        return self.handle_response(response)
