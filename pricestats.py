@@ -1,8 +1,5 @@
 import datetime as dt
 
-# Note: A lot of the code in here is actually not DRY. It is possible to do 1 loop through the 'dates' and calculate
-# all the desired things in 1/5th the time. I decided to leave it as is for testability.
-
 
 class PriceAnalyzer:
 
@@ -18,11 +15,10 @@ class PriceAnalyzer:
 
         if date in indexer:
             price_units = dates[date]
-            print("Price: " + price_units[0])
+            print('\n' + "Price: " + price_units[0])
             return price_units[0]
 
         else:
-            # quick and dirty solution to finding neighbors is to create a key with an arbitrary value in the dict
             dates[date] = '0'
             indexer = list(dates.keys())
             indexer.sort()
@@ -47,15 +43,17 @@ class PriceAnalyzer:
                         return "%.2f" % avg_price
 
     @classmethod
-    def dict_cleaner(cls, first_date, second_date):
-
+    def first_second_order(cls, first_date, second_date):
         if first_date > second_date:
             cls.firstDate = second_date
             cls.secondDate = first_date
         else:
             cls.firstDate = first_date
             cls.secondDate = second_date
+        return
 
+    @classmethod
+    def dict_cleaner(cls):
         dates = dict(cls.datePrices)
         for date in list(dates.keys()):
             if date < cls.firstDate:
@@ -66,7 +64,10 @@ class PriceAnalyzer:
 
     @classmethod
     def price_range(cls, first_date, second_date):
+        cls.first_second_order(first_date, second_date)
         dates = cls.dict_cleaner()
+        if len(dates) == 0:
+            return "Your date range has nothing in it."
 
         p_max = cls.price_max(dates)
         p_min = cls.price_min(dates)
@@ -74,7 +75,6 @@ class PriceAnalyzer:
         std_dev = cls.price_std_dev(dates, avg)
         median = cls.price_median(dates)
 
-        print(p_max + p_min + avg + std_dev + median)
         return p_max, p_min, avg, std_dev, median
 
     @classmethod
@@ -125,41 +125,32 @@ class PriceAnalyzer:
 
     @classmethod
     def price_median(cls, dates):
-        # It takes the average of prices from around it for an even amount of dates.
         indexer = list(dates.keys())
         half_length = len(indexer)/2
-        print(half_length)
-        if type(half_length) is not int and half_length >= 2:
+        if type(half_length) is not int and half_length > 1:
             half_length = int(half_length)
             median_price = (float(dates[indexer[half_length]][0]) + float(dates[indexer[half_length + 1]][0]))/2
         elif half_length == 1:
             median_price = (float(dates[indexer[0]][0]) + float(dates[indexer[1]][0]))/2
         else:
+            half_length = int(half_length)
             median_date = indexer[half_length]
-            median_price = dates[median_date][0]
+            median_price = float(dates[median_date][0])
 
         print("MEDIAN : %.2f" % median_price)
         return "%.2f" % median_price
 
 
 class DateReader:
-
-    def __init__(self):
-        self.dateDict = None
-
     def read_file(self, date_file):
-        # Check the path to make sure its not something weird? Not presently done.
         dates = {}
         for line in date_file:
             tokens = line.split()
             tokens[0] = self.to_datetime(tokens[0])
             dates[tokens[0]] = (tokens[1], tokens[2])
-        self.dateDict = dates
         date_file.close()
         return dates
 
-    def to_datetime(self, date):
-        temp_date = date
-        # this does not use ISO_8601 style as is (not for the format string)
-        temp_date = dt.datetime.strptime(temp_date, "%Y-%m-%dT%H:%M:%SZ")
-        return temp_date
+    @staticmethod
+    def to_datetime(date):
+        return dt.datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
