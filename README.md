@@ -12,7 +12,7 @@ formatted like the dates in the sample files:
     2017-03-01T13:37:59Z
     yyyy-mm-ddThh:mm:ssZ
 
-python .\cli.py PATH_TO_FILE [DATE1] [DATE2]
+        python .\cli.py PATH_TO_FILE [DATE1] [DATE2]
 
 Example:
 

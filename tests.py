@@ -47,11 +47,7 @@ class TestStatAnalysis(unittest.TestCase):
     def testGetPriceAvg(self):
         assert self.priceAnalyzer.get_price(datetime.datetime(2017, 4, 24)) == '20.77'
 
-    # def testMax(self):
-
-    # def testMin(self):
-
-    # def testAvg(self):
+    # def testMaxMinAvg(self):
 
     # def testStdDev(self):
 
@@ -82,7 +78,7 @@ class TestStatAnalysis(unittest.TestCase):
         assert len(pages) == 2
 
     # This nifty test is really testing the commented out things above as well as the other 2 tests, making them sort of
-    # redundant. If this wasn't already late I would do my due diligence and make sure they are all working individually
+    # redundant. If this wasn't already late I would do my due diligence and make sure they are all working individually.
     def testPriceRange(self):
         results = self.priceAnalyzer.price_range(datetime.datetime(2017, 6, 13), datetime.datetime(2017, 3, 30))
         assert results == ('23.09', '17.21', '19.90', '1.81', '18.16')

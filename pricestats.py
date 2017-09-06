@@ -8,39 +8,51 @@ class PriceAnalyzer:
         self.datePrices = date_prices
         self.firstDate = None
         self.secondDate = None
+        self.dateRange = None
+        print("")
 
     def get_price(self, date):
         dates = dict(self.datePrices)
         indexer = list(dates.keys())
+        end = len(dates) - 1
+        binary_search = self.__binary_search(indexer, 0, end, date)
 
-        if date in indexer:
-            price_units = dates[date]
-            print('\n' + "Price: " + price_units[0])
-            return price_units[0]
+        # Handles the cases where there is no data for the date. By default it takes the average
+        if type(binary_search) == tuple:
+
+            # For when the date should be the first element
+            if binary_search[1] == -1:
+                return dates[indexer[binary_search[0]]][0]
+
+            # For when the date should the last element
+            elif binary_search[1] == end:
+                return dates[indexer[binary_search[1]]][0]
+
+            # For when the date is somewhere in the middle.
+            else:
+                left_price = dates[indexer[binary_search[0]]][0]
+                right_price = dates[indexer[binary_search[1]]][0]
+                return "%.2f" % ((float(left_price) + float(right_price))/2)
+        else:
+            return dates[binary_search][0]
+
+    def __binary_search(self, dates, start, end, date):
+
+        if end >= start:
+
+            mid = int(start + (end - start)/2)
+
+            if dates[mid] == date:
+                return dates[mid]
+
+            elif dates[mid] > date:
+                return self.__binary_search(dates, start, mid-1, date)
+
+            else:
+                return self.__binary_search(dates, mid+1, end, date)
 
         else:
-            dates[date] = '0'
-            indexer = list(dates.keys())
-            indexer.sort()
-
-            for i in range(0, len(indexer)):
-                if indexer[i] == date:
-                    if i == 0:
-                        next_price = dates[indexer[i+1]]
-                        print("Price from the next item: " + next_price[0])
-                        return next_price[0]
-
-                    elif i == len(indexer) - 1:
-                        last_price = dates[indexer[i-1]]
-                        print("Price from the last item: " + last_price[0])
-                        return last_price[0]
-
-                    else:
-                        last_price = dates[indexer[i-1]]
-                        next_price = dates[indexer[i+1]]
-                        avg_price = (float(last_price[0]) + float(next_price[0])) / 2
-                        print("Price from the adjacent items: %.2f" % avg_price)
-                        return "%.2f" % avg_price
+            return start, end
 
     @classmethod
     def first_second_order(cls, first_date, second_date):
@@ -60,56 +72,53 @@ class PriceAnalyzer:
                 del dates[date]
             if date > cls.secondDate:
                 del dates[date]
+        cls.dateRange = dates
         return dates
 
     @classmethod
     def price_range(cls, first_date, second_date):
         cls.first_second_order(first_date, second_date)
         dates = cls.dict_cleaner()
+
         if len(dates) == 0:
             return "Your date range has nothing in it."
 
-        p_max = cls.price_max(dates)
-        p_min = cls.price_min(dates)
-        avg = cls.price_avg(dates)
+        max_price, min_price, avg = cls.max_min_average(dates)
         std_dev = cls.price_std_dev(dates, avg)
         median = cls.price_median(dates)
 
-        return p_max, p_min, avg, std_dev, median
+        print("Max Price: " + max_price)
+        print("Min Price: " + min_price)
+        print("Average Price: " + avg)
+        print("Standard Deviation: " + std_dev)
+        print("Median Price: " + median)
+        print("")
+
+        return max_price, min_price, avg, std_dev, median
 
     @classmethod
-    def price_max(cls, dates):
+    def max_min_average(cls, dates):
         max_price = str(float("-inf"))
+        min_price = str(float("inf"))
+        avg_counter = 0
+        avg_total = 0
+
         for date in list(dates.keys()):
             price_units = dates[date]
+            # max
             if max_price < price_units[0]:
                 max_price = price_units[0]
-        print("MAX : " + max_price)
-        return max_price
-
-    @classmethod
-    def price_min(cls, dates):
-        min_price = str(float("inf"))
-        for date in list(dates.keys()):
-            price_units = dates[date]
+            # min
             if price_units[0] < min_price:
                 min_price = price_units[0]
-        print("MIN : " + min_price)
-        return min_price
 
-    @classmethod
-    def price_avg(cls, dates):
-        counter = 0
-        total = 0
-        avg_price = 0
-        for date in dates:
-            price_units = dates[date]
-            total += float(price_units[0])
-            counter += 1
-        if counter is not 0:
-            avg_price = total/counter
-        print("AVG : %.2f" % avg_price)
-        return "%.2f" % avg_price
+            avg_total += float(price_units[0])
+            avg_counter += 1
+
+        avg_price = avg_total / avg_counter
+        avg = "%.2f" % avg_price
+
+        return max_price, min_price, avg
 
     @classmethod
     def price_std_dev(cls, dates, avg):
@@ -119,7 +128,6 @@ class PriceAnalyzer:
             std_sum = ((float(price_units[0])) - float(avg))**2
             counter += 1
         std_dev = std_sum / counter
-        print("STD_DEV : %.2f" % std_dev)
 
         return "%.2f" % std_dev
 
@@ -137,7 +145,6 @@ class PriceAnalyzer:
             median_date = indexer[half_length]
             median_price = float(dates[median_date][0])
 
-        print("MEDIAN : %.2f" % median_price)
         return "%.2f" % median_price
 
 

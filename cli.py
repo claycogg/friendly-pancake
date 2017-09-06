@@ -13,24 +13,32 @@ class CLI:
         self.handle_args()
 
     def handle_args(self):
-        print(sys.argv)
         if len(sys.argv) > 4:
-            print("Please follow the instructions found in the Readme and double-check your arguments.")
+            print("You have entered too many arguments. Please look to the Readme for the proper usage of arguments.")
             exit()
+        elif len(sys.argv) < 2:
+            print("You have entered too few arguments. Please look to the Readme for the proper usage of arguments.")
+        self.filePath = sys.argv[1]
+        self.open_file()
+        self.firstDate = sys.argv[2]
+        self.secondDate = sys.argv[3]
+
+    def open_file(self):
         try:
-            self.filePath = sys.argv[1]
             self.file = open(self.filePath, 'r')
-            self.firstDate = sys.argv[2]
-            self.secondDate = sys.argv[3]
         except FileNotFoundError:
-            print("Please check the entered file path.\n")
-            exit()
+            print('\n' + "You tried to access: '%s' + but something went wrong." % self.filePath)
+            self.filePath = input("Please check that the path is correct and type it again, or press enter to end...\n")
+            if self.filePath == "":
+                exit()
+            self.open_file()
 
 
 def main():
     cli = CLI()
     date_reader = DateReader()
 
+    print(str(cli.file))
     dates = date_reader.read_file(cli.file)
     price_analyzer = PriceAnalyzer(dates)
     input_dates = [date_reader.to_datetime(cli.firstDate), date_reader.to_datetime(cli.secondDate)]
